@@ -25,7 +25,7 @@ while run.status != "completed":
     if run.status == "requires_action":
         ## handle tool calls
         # Define the list to store tool outputs
-        tool_outputs = []
+        tool_outputs = []s
         
         # Loop through each tool in the required action section
         for tool in run.required_action.submit_tool_outputs.tool_calls:
@@ -57,7 +57,46 @@ while run.status != "completed":
                         "output": filename
                     }
                 )
-        
+                
+            if tool.function.name == "read_file":
+                # Write the code that reads a file given some piece of information.
+                # What info? How? What is the meaning of life?
+                print(tool.function.arguments)
+                args = json.loads(tool.function.arguments)
+                filename = args.get("filename")
+                n = args.get("n") 
+                ## get the most recent code block from the messages object
+                messages = client.beta.threads.messages.list(
+                    thread_id=thread.id
+                )
+                all_text = ""
+                #for message in messages:
+                #    print(message.content[0].text)
+                #    all_text += str(message.content[0].text.value)
+                # code_blocks = all_text.split('```')
+                # code_blocks = code_blocks[-2::-2]
+                # if len(code_blocks) > nth_code_block:
+                    ## write the code block to the file
+                nth_code_block = ""
+                with open(filename, 'r') as file:
+                    ## remove the first line in the code block
+                    for line in filename:
+                        all_text += line
+                        code_blocks = all_text.split('\n')
+
+                    nth_code_block = code_blocks[n]
+
+                    # code_blocks = code_blocks[-2::-2]
+                    # code_blocks[nth_code_block] = code_blocks[nth_code_block].split("\n", 1)[n]
+                    # file.read(code_blocks[nth_code_block])
+                
+                tool_outputs.append(
+                    {
+                        "tool_call_id": tool.id,
+                        "output": nth_code_block
+                    }
+                )
+
         ## submit the tool outputs
         client.beta.threads.runs.submit_tool_outputs(
             run.id,
