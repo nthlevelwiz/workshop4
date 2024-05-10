@@ -28,7 +28,11 @@ while run.status != "completed":
 
 messages = client.beta.threads.messages.list(thread_id=thread.id)
 for message in messages:
-    print(message.content)
+    print(message.content[0].text.value)
+    start = message.content[0].text.value.find("```python") + len("```python")
+    end = message.content[0].text.value.find("```", start)
+    code_block = message.content[0].text.value[start:end].strip()
+    print(code_block)
 
 print("Done.")
 
