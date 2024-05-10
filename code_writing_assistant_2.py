@@ -21,7 +21,7 @@ run = client.beta.threads.runs.create(
 
 while run.status != "completed":
     run = client.beta.threads.runs.retrieve(run.id, thread_id=thread.id)
-    print(run.status)
+    if run.usage: print(run.usage)
     if run.status == "requires_action":
         ## handle tool calls
         # Define the list to store tool outputs
@@ -65,31 +65,10 @@ while run.status != "completed":
                 file_contents = ""
                 with open(filename, "r") as file:
                     file_contents = file.read()
-                    # code_blocks = 
-
-                
-
-                ## get the most recent code block from the messages object
-                messages = client.beta.threads.messages.list(
-                    thread_id=thread.id
-                )
-                all_text = ""
-                for message in messages:
-                    print(message.content[0].text)
-                    all_text += str(message.content[0].text.value)
-                code_blocks = all_text.split('```')
-                code_blocks = code_blocks[-2::-2]
-                if len(code_blocks) > nth_code_block:
-                    ## write the code block to the file
-                    with open(filename, 'w') as file:
-                        ## remove the first line in the code block
-                        code_blocks[nth_code_block] = code_blocks[nth_code_block].split("\n", 1)[1]
-                        file.write(code_blocks[nth_code_block])
-                
                 tool_outputs.append(
                     {
                         "tool_call_id": tool.id,
-                        "output": filename
+                        "output": file_contents
                     }
                 )
         
@@ -109,4 +88,4 @@ messages = client.beta.threads.messages.list(
     thread_id=thread.id
   )
 for message in messages:
-    print(message.content)
+    print(message.content[0].text.value)
